@@ -327,7 +327,10 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
   uint8_t idx;
 
   // Copy position data based on type of motion being planned.
- if (block->condition & PL_COND_FLAG_SYSTEM_MOTION) {
+  if (block->condition & PL_COND_FLAG_SYSTEM_MOTION) {
+    // Preserve every independent axis before converting coupled motor positions.
+    // Homing bypasses the normal planner position and uses this system-motion path.
+    memcpy(position_steps, sys_position, sizeof(position_steps));
     #if defined(COREXY) || defined(COREBC)
       #ifdef COREXY
         position_steps[AXIS_1] = system_convert_corexy_to_x_axis_steps(sys_position);
@@ -338,8 +341,6 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
         position_steps[AXIS_6] = system_convert_corebc_to_c_axis_steps(sys_position);
       #endif
       
-    #else
-      memcpy(position_steps, sys_position, sizeof(sys_position));
     #endif
   } else { memcpy(position_steps, pl.position, sizeof(pl.position)); }
 
