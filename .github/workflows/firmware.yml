@@ -1,0 +1,13 @@
+name: Firmware checks
+on: [push, pull_request]
+jobs:
+  mega-and-homing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install AVR compiler
+        run: sudo apt-get update && sudo apt-get install -y gcc-avr avr-libc binutils-avr
+      - name: Homing regression checks
+        run: python3 -m unittest discover -s tests -v
+      - name: Compile for Arduino Mega 2560
+        run: bash scripts/build-mega.sh

@@ -397,11 +397,16 @@ if (max_travel < HOMING_AXIS_LOCATE_SCALAR) { system_set_exec_alarm(EXEC_ALARM_H
   uint8_t axislock[N_AXIS];
   do {
 
+    // Count only this pass's active axes. An uninitialized or accumulating count
+    // changes the requested homing speed, including on later locating passes.
+    n_active_axis = 0;
+
     system_convert_array_steps_to_mpos(target,sys_position);
 
     // Initialize and declare variables needed for homing routine.
     for (idx=0; idx<N_AXIS; idx++) {
 axislock[idx]=0;
+sys.homing_axis_lock[idx] = 0;
 // Set target location for active axes and setup computation for homing rate.
 if (bit_istrue(cycle_mask,bit(idx))) {
 n_active_axis++;
